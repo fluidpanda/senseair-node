@@ -1,7 +1,7 @@
 import type { SerialPort } from "@/serial/types";
 import { sensorState } from "@/state";
 
-const READ_CO2: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x00, 0x03, 0x00, 0xd5, 0xc5]);
+const READ_CO2: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x00, 0x03, 0x00, 0x01, 0xd5, 0xc5]);
 
 export interface ServiceOptions {
     pollingIntervalMs?: number;

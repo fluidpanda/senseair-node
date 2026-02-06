@@ -44,8 +44,9 @@ export class MockSerialPort implements SerialPort {
             data[2] === 0x00 &&
             data[3] === 0x03 &&
             data[4] === 0x00 &&
-            data[5] === 0xd5 &&
-            data[6] === 0xc5;
+            data[5] === 0x01 &&
+            data[6] === 0xd5 &&
+            data[7] === 0xc5;
         if (!isReadCo2) {
             this.emmitError(new Error(`MockSerialPort: Unsupported request: ${data.toString("hex")}`));
         }
