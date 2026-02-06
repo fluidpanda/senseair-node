@@ -1,4 +1,4 @@
-import { crc16 } from "crc";
+import { crc16modbus } from "crc";
 import type { SerialDataHandler, SerialPort } from "@/serial/types";
 
 export class MockSerialPort implements SerialPort {
@@ -11,12 +11,12 @@ export class MockSerialPort implements SerialPort {
     private readonly startedAtMs: number;
     private readonly responseDelayMs: number;
 
-    private emmitError(err: Error): void {
+    emmitError(err: Error): void {
         if (this.errorHandler) {
             this.errorHandler(err);
         }
     }
-    private simulatePpm(): number {
+    simulatePpm(): number {
         const t: number = (Date.now() - this.startedAtMs) / 1_000;
         const v: number = this.basePpm + Math.sin(t / 6) * this.amplitude;
         return Math.max(400, Math.min(2_500, Math.round(v)));
@@ -55,7 +55,7 @@ export class MockSerialPort implements SerialPort {
         const hi: number = (ppm >> 8) & 0xff;
         const lo: number = ppm & 0xff;
         const frame: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x02, hi, lo, 0x00, 0x00]);
-        const crc: number = crc16(frame.subarray(0, 5));
+        const crc: number = crc16modbus(frame.subarray(0, 5));
         frame[5] = crc & 0xff; // CRC low byte
         frame[6] = (crc >> 8) & 0xff; // CRC high byte
         setTimeout((): void => {
