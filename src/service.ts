@@ -38,9 +38,10 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
             sensorState.lastError = msg;
         }
     });
+    const intervalMs: number = opts.pollingIntervalMs ?? 5_000;
     const timer = setInterval((): void => {
         port.write(READ_CO2);
-    }, opts.pollingIntervalMs);
+    }, intervalMs);
     port.write(READ_CO2);
     return {
         stop: async (): Promise<void> => {
