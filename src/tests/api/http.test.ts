@@ -15,7 +15,7 @@ await describe(`src/api/http.createApi`, async (): Promise<void> => {
         sensorState.co2ppm = 600;
         sensorState.lastUpdateMs = Date.now() - 1000;
         sensorState.lastError = null;
-        app = await createApi({ host: "127.0.0.1", port: 60_000 });
+        app = await createApi({ host: "127.0.0.1", port: 0 });
         const res = await app.inject({ method: "GET", url: "/status" });
         assert.equal(res.statusCode, 200);
         const body: StatusResponse = res.json();
