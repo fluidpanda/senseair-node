@@ -39,6 +39,7 @@ export default [
                         order: "asc",
                         caseInsensitive: true,
                     },
+                    sortTypesGroup: true,
                 },
             ],
         },
