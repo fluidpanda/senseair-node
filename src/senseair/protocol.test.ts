@@ -22,7 +22,7 @@ await describe(`senseair/protocol.parseCo2Frame`, async (): Promise<void> => {
             parseCo2Frame(frame);
         }, new RegExp(ProtocolErrors.frameLength));
     });
-    await it("throes on invalid header", (): void => {
+    await it("throws on invalid header", (): void => {
         const frame: Buffer = Buffer.from([0xff, 0x04, 0x02, 0x01, 0xf4]);
         assert.throws((): void => {
             parseCo2Frame(frame);

@@ -11,7 +11,7 @@ export class MockSerialPort implements SerialPort {
     private readonly startedAtMs: number;
     private readonly responseDelayMs: number;
 
-    emmitError(err: Error): void {
+    emitError(err: Error): void {
         if (this.errorHandler) {
             this.errorHandler(err);
         }
@@ -38,7 +38,7 @@ export class MockSerialPort implements SerialPort {
         // Master Transmit: `FE 04 00 03 00 01 D5 C5`
         // Slave Reply Ex:  `FE 04 02 01 90 AC D8`    0x190
         const isReadCo2: boolean =
-            data.length >= 6 &&
+            data.length >= 8 &&
             data[0] === 0xfe &&
             data[1] === 0x04 &&
             data[2] === 0x00 &&
@@ -48,7 +48,8 @@ export class MockSerialPort implements SerialPort {
             data[6] === 0xd5 &&
             data[7] === 0xc5;
         if (!isReadCo2) {
-            this.emmitError(new Error(`MockSerialPort: Unsupported request: ${data.toString("hex")}`));
+            this.emitError(new Error(`MockSerialPort: Unsupported request: ${data.toString("hex")}`));
+            return;
         }
         const ppm: number = this.simulatePpm();
         // Slave Reply: `FE 04 02 HI LO CRC_LO CRC_HI`
