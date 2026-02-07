@@ -10,8 +10,8 @@ await describe(`src/serial/mock.MockSerialPort`, async (): Promise<void> => {
         const port = new MockSerialPort({ responseDelayMs: 1 });
         let errMsg: string = "";
         let gotData: boolean = false;
-        port.onError((err: Error): string => (errMsg = err.message));
-        port.onData((): boolean => (gotData = true));
+        port.onError((err: Error) => (errMsg = err.message));
+        port.onData(() => (gotData = true));
         port.write(Buffer.from([0x01, 0x02, 0x03]));
         await sleep(5);
         assert.ok(errMsg.includes("Unsupported request"));
@@ -20,8 +20,8 @@ await describe(`src/serial/mock.MockSerialPort`, async (): Promise<void> => {
     await it("emits a valid CO2 frame with correct CRC", async (): Promise<void> => {
         const port = new MockSerialPort({ responseDelayMs: 1, basePpm: 500, amplitude: 0 });
         let frame: Buffer | null = null;
-        port.onData((b: Buffer): void => void (frame = b));
-        port.onError((e: Error): void => assert.fail(e));
+        port.onData((b: Buffer) => (frame = b));
+        port.onError((e: Error) => assert.fail(e));
         port.write(Buffer.from([0xfe, 0x04, 0x00, 0x03, 0x00, 0x01, 0xd5, 0xc5]));
         await sleep(5);
         assertNonNull(frame, "No frame received");
