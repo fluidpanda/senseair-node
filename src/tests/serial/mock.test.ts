@@ -5,7 +5,7 @@ import { crc16modbus } from "crc";
 import { MockSerialPort } from "@/serial/mock";
 import { assertNonNull, sleep } from "@/tests/helpers";
 
-await describe(`src/serial/mock`, async (): Promise<void> => {
+await describe(`src/serial/mock.MockSerialPort`, async (): Promise<void> => {
     await it("emits error on unsupported requests", async (): Promise<void> => {
         const port = new MockSerialPort({ responseDelayMs: 1 });
         let errMsg: string = "";

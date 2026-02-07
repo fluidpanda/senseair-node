@@ -5,7 +5,7 @@ import { sensorState } from "@/state";
 import { sleep } from "@/tests/helpers";
 import { FakePort } from "@/tests/service";
 
-await describe(`src/service`, async (): Promise<void> => {
+await describe(`src/service.startService`, async (): Promise<void> => {
     beforeEach((): void => {
         sensorState.ok = false;
         sensorState.co2ppm = null;
