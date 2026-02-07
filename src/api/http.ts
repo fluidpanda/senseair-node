@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
+import type { StatusResponse } from "@/api/types";
 import { sensorState } from "@/state";
 
 export interface ApiOptions {
@@ -9,7 +10,7 @@ export interface ApiOptions {
 
 export async function createApi(opts: ApiOptions): Promise<FastifyInstance> {
     const app = Fastify({ logger: true });
-    app.get("/status", () => {
+    app.get("/status", (): StatusResponse => {
         const now: number = Date.now();
         const ageMs: number | null = sensorState.lastUpdateMs ? now - sensorState.lastUpdateMs : null;
         return {
