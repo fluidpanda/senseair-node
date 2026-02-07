@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { parseCo2Frame, ProtocolErrors } from "@/senseair/protocol";
 
-await describe(`senseair/protocol.parseCo2Frame`, async (): Promise<void> => {
+await describe(`src/senseair/protocol.parseCo2Frame`, async (): Promise<void> => {
     await it("parses valid CO2 frame", (): void => {
         const frame: Buffer<ArrayBuffer> = Buffer.from([
             0xfe,
