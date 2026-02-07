@@ -1,29 +1,43 @@
-import { describe, expect, it } from "vitest";
-import { parseCo2Frame } from "@/senseair/protocol";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { parseCo2Frame, ProtocolErrors } from "@/senseair/protocol";
 
-describe("parseCo2Frame", (): void => {
-    it("parses ppm from a valid frame", (): void => {
-        const frame: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x02, 0x01, 0xf4, 0x00, 0x00]);
-        expect(parseCo2Frame(frame)).toBe(500);
+await describe(`senseair/protocol.parseCo2Frame`, async (): Promise<void> => {
+    await it("parses valid CO2 frame", (): void => {
+        const frame: Buffer<ArrayBuffer> = Buffer.from([
+            0xfe,
+            0x04,
+            0x02,
+            0x01,
+            0xf4, // 500 ppm
+            0x00,
+            0x00,
+        ]);
+        const ppm: number = parseCo2Frame(frame);
+        assert.equal(ppm, 500);
     });
-
-    it("throws on short frame", (): void => {
-        const frame: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x02, 0x01]);
-        expect((): number => parseCo2Frame(frame)).toThrow(/Frame too short/i);
+    await it("throws on short frame", (): void => {
+        const frame: Buffer = Buffer.from([0xfe, 0x04, 0x02, 0x01]);
+        assert.throws((): void => {
+            parseCo2Frame(frame);
+        }, new RegExp(ProtocolErrors.frameLength));
     });
-
-    it("throws on wrong header bytes", (): void => {
-        const frame: Buffer<ArrayBuffer> = Buffer.from([0xff, 0x04, 0x02, 0x01, 0xf4]);
-        expect((): number => parseCo2Frame(frame)).toThrow(/Invalid address/i);
+    await it("throes on invalid header", (): void => {
+        const frame: Buffer = Buffer.from([0xff, 0x04, 0x02, 0x01, 0xf4]);
+        assert.throws((): void => {
+            parseCo2Frame(frame);
+        }, new RegExp(ProtocolErrors.frameAddress));
     });
-
-    it("throws on wrong function", (): void => {
-        const frame: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x03, 0x02, 0x01, 0xf4]);
-        expect((): number => parseCo2Frame(frame)).toThrow(/Invalid function/i);
+    await it("throws on wrong function", (): void => {
+        const frame: Buffer = Buffer.from([0xfe, 0x03, 0x02, 0x01, 0xf4]);
+        assert.throws((): void => {
+            parseCo2Frame(frame);
+        }, new RegExp(ProtocolErrors.frameFunction));
     });
-
-    it("throws on wrong payload length marker", (): void => {
-        const frame: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x04, 0x01, 0xf4]);
-        expect((): number => parseCo2Frame(frame)).toThrow(/Invalid payload length/i);
+    await it("throws on wrong payload length marker", (): void => {
+        const frame: Buffer = Buffer.from([0xfe, 0x04, 0x04, 0x01, 0xf4]);
+        assert.throws((): void => {
+            parseCo2Frame(frame);
+        }, new RegExp(ProtocolErrors.framePayload));
     });
 });
