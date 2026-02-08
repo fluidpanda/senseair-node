@@ -1,11 +1,11 @@
 {
     "name": "senseair",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "SenseAir S8 service",
     "main": "dist/main.js",
     "scripts": {
         "lint": "eslint --fix . && prettier --write --log-level warn .",
-        "test": "node --import tsx/esm --test src/tests",
+        "test": "node --import tsx/esm --test src/tests/run.test.ts",
         "build": "tsup",
         "dev": "tsx watch src/main.ts"
     },
