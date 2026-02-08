@@ -7,7 +7,7 @@
         "lint": "eslint --fix . && prettier --write --log-level warn .",
         "test": "node --import tsx/esm --test",
         "build": "tsup",
-        "dev": "SERIAL_PATH=/dev/ttyUSB0 tsx watch src/main.ts"
+        "dev": "tsx watch src/main.ts"
     },
     "keywords": [],
     "author": "borr",
