@@ -8,7 +8,7 @@ export interface SerialPortFromNodeOptions {
 }
 
 export function createSerialPortFromMock(): SerialPort {
-    console.log("Serial, using mock port");
+    console.log("Serial port created from mock");
     return new MockSerialPort({
         basePpm: 650,
         amplitude: 200,
@@ -25,7 +25,7 @@ export function createSerialPortFromNode(opts: SerialPortFromNodeOptions): Seria
         parity: "none",
         autoOpen: true,
     });
-    console.log(`Serial, using serialport ${opts.path}`);
+    console.log(`Serial port created from`, { path: opts.path });
     return {
         write(data: Buffer): void {
             port.write(data);
