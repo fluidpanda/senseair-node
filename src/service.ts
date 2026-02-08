@@ -6,7 +6,6 @@ import { sensorState } from "@/state";
 import { SlidingWindowAvg } from "@/state/history";
 
 const READ_CO2: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x00, 0x03, 0x00, 0x01, 0xd5, 0xc5]);
-const avgForOneMin = new SlidingWindowAvg(60 * 1_000);
 
 export interface ServiceOptions {
     pollingIntervalMs?: number;
@@ -19,6 +18,7 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
         sensorState.ok = false;
         sensorState.lastError = err.message;
     });
+    const avgForOneMin = new SlidingWindowAvg(60 * 1_000);
     let acc: Buffer = Buffer.alloc(0);
     port.onData((chunk: Buffer): void => {
         try {
@@ -31,8 +31,8 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
                 avgForOneMin.push(ppm, now);
                 sensorState.ok = true;
                 sensorState.co2ppm = ppm;
-                sensorState.co2ppmAvg = avgForOneMin.avg(ppm);
-                sensorState.lastUpdateMs = Date.now();
+                sensorState.co2ppmAvg = avgForOneMin.avg(now);
+                sensorState.lastUpdateMs = now;
                 sensorState.lastError = null;
                 console.log("Sensor update", { co2ppm: ppm });
             }
