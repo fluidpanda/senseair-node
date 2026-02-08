@@ -18,6 +18,7 @@ export async function createApi(opts: ApiOptions): Promise<FastifyInstance> {
             sensor: {
                 ok: sensorState.ok,
                 co2ppm: sensorState.co2ppm,
+                co2ppm_avg_min: sensorState.co2ppmAvg,
                 lastUpdateMs: sensorState.lastUpdateMs,
                 ageMs,
                 lastError: sensorState.lastError,

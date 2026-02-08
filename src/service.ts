@@ -3,8 +3,10 @@ import type { SerialPort } from "@/serial/types";
 import { extractCo2Frames } from "@/senseair/frame";
 import { co2ppmFromFrame } from "@/senseair/protocol";
 import { sensorState } from "@/state";
+import { SlidingWindowAvg } from "@/state/history";
 
 const READ_CO2: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x00, 0x03, 0x00, 0x01, 0xd5, 0xc5]);
+const avgForOneMin = new SlidingWindowAvg(60 * 1_000);
 
 export interface ServiceOptions {
     pollingIntervalMs?: number;
@@ -25,8 +27,11 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
             acc = res.rest;
             for (const frame of res.frames) {
                 const ppm: number = co2ppmFromFrame(frame);
+                const now: number = Date.now();
+                avgForOneMin.push(ppm, now);
                 sensorState.ok = true;
                 sensorState.co2ppm = ppm;
+                sensorState.co2ppmAvg = avgForOneMin.avg(ppm);
                 sensorState.lastUpdateMs = Date.now();
                 sensorState.lastError = null;
                 console.log("Sensor update", { co2ppm: ppm });
