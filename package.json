@@ -5,7 +5,7 @@
     "main": "dist/main.js",
     "scripts": {
         "lint": "eslint --fix . && prettier --write --log-level warn .",
-        "test": "node --import tsx/esm --test",
+        "test": "node --import tsx/esm --test src/tests",
         "build": "tsup",
         "dev": "tsx watch src/main.ts"
     },
