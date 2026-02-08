@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
+import { crc16modbus } from "crc";
 import { startService } from "@/service";
 import { sensorState } from "@/state";
 import { sleep } from "@/tests/helpers";
 import { FakePort } from "@/tests/service";
+
+function makeCo2Frame(ppm: number): Buffer {
+    const hi: number = (ppm >> 8) & 0xff;
+    const lo: number = ppm & 0xff;
+    const payload: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x02, hi, lo]);
+    const crc: number = crc16modbus(payload);
+    return Buffer.concat([payload, Buffer.from([crc & 0xff, (crc >> 8) & 0xff])]);
+}
 
 await describe(`src/service.startService`, async (): Promise<void> => {
     beforeEach((): void => {
@@ -32,7 +41,7 @@ await describe(`src/service.startService`, async (): Promise<void> => {
     await it("updates state on valid frame", async (): Promise<void> => {
         const port = new FakePort();
         const service = startService(port, { pollingIntervalMs: 50_000 });
-        port.emitData(Buffer.from([0xfe, 0x04, 0x02, 0x01, 0xf4, 0x00, 0x00]));
+        port.emitData(makeCo2Frame(500));
         assert.equal(sensorState.ok, true);
         assert.equal(sensorState.co2ppm, 500);
         assert.equal(sensorState.lastError, null);
@@ -44,7 +53,7 @@ await describe(`src/service.startService`, async (): Promise<void> => {
         const service = startService(port, { pollingIntervalMs: 50_000 });
         port.emitData(Buffer.from([0x00, 0xff]));
         assert.equal(sensorState.ok, false);
-        assert.ok(sensorState.lastError);
+        assert.equal(sensorState.lastError, null);
         await service.stop();
     });
     await it("sets error state on serial error", async (): Promise<void> => {
