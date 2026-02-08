@@ -1,0 +1,40 @@
+name: release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Pack artifact
+        shell: bash
+        run: |
+          mkdir -p out
+          zip -r out/senseair-${{ github.ref_name }}-${{ runner.os }}.zip dist/ package.json package-lock.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: senseair-${{ github.ref_name }}-${{ runner.os }}
+          path: out/*.zip
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/**/*
+          generate_release_notes: true
