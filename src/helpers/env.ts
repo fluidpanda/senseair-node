@@ -19,3 +19,8 @@ export function envInt(name: string, fallback: number): number {
     if (!Number.isFinite(n) || n <= 0) return fallback;
     return Math.floor(n);
 }
+
+export function envStr(name: string): string | null {
+    const raw: string | undefined = process.env[name];
+    return raw && raw.length > 0 ? raw : null;
+}

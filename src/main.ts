@@ -1,7 +1,7 @@
 import type { SerialPort } from "@/serial/types";
 import { createApi } from "@/api/http";
-import { envInt, initEnv } from "@/helpers/env";
-import { createSerialPortFromMock } from "@/serial/factory";
+import { envInt, envStr, initEnv } from "@/helpers/env";
+import { createSerialPortFromNode, createSerialPortFromMock } from "@/serial/factory";
 import { startService } from "@/service";
 
 initEnv();
@@ -11,7 +11,10 @@ const API_PORT: number = envInt("API_PORT", 4_545);
 const POLL_INTERVAL_MS: number = envInt("POLL_INTERVAL_MS", 5_000);
 
 async function main(): Promise<void> {
-    const port: SerialPort = createSerialPortFromMock();
+    const serialPath: string | null = envStr("SERIAL_PATH");
+    const port: SerialPort = serialPath
+        ? createSerialPortFromNode({ path: serialPath, baudRate: 9_600 })
+        : createSerialPortFromMock();
     const service = startService(port, { pollingIntervalMs: POLL_INTERVAL_MS });
     const api = await createApi({ host: API_HOST, port: API_PORT });
     const shutdown = async (): Promise<void> => {
