@@ -8,7 +8,7 @@ const AVG_WINDOWS: Readonly<Record<AvgKey, number>> = {
     m1: min,
     m5: 5 * min,
     m10: 10 * min,
-    m30: 10 * min,
+    m30: 30 * min,
 } as const;
 
 export const avgs: Map<AvgKey, SlidingWindowAvg> = new Map(
