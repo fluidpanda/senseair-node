@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
 import { describe, it } from "node:test";
 import { crc16modbus } from "crc";
+import { assertNonNull, sleep } from "@/helpers/tests";
 import { co2ppmFromFrame } from "@/senseair/protocol";
 import { MockSerialPort } from "@/serial/mock";
-import { assertNonNull, sleep } from "@/tests/helpers";
 
 await describe(`src/serial/mock.MockSerialPort`, async (): Promise<void> => {
     await it("emits error on unsupported requests", async (): Promise<void> => {
