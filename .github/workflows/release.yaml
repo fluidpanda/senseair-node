@@ -20,10 +20,10 @@ jobs:
         shell: bash
         run: |
           mkdir -p out
-          zip -r out/senseair-${{ github.ref_name }}-${{ runner.os }}.zip dist/ package.json package-lock.json
+          zip -r out/senseair-${{ github.ref_name }}.zip dist/ package.json package-lock.json README.md
       - uses: actions/upload-artifact@v6
         with:
-          name: senseair-${{ github.ref_name }}-${{ runner.os }}
+          name: senseair-${{ github.ref_name }}
           path: out/*.zip
   release:
     needs: build
