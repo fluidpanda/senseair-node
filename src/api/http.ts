@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
 import type { StatusResponse } from "@/api/types";
-import { sensorState } from "@/state";
+import { sensorState } from "@/state/types";
 
 export interface ApiOptions {
     host: string;
@@ -18,9 +18,7 @@ export async function createApi(opts: ApiOptions): Promise<FastifyInstance> {
             sensor: {
                 ok: sensorState.ok,
                 co2ppm: sensorState.co2ppm,
-                co2ppm_avg_1_min: sensorState.co2ppmAvg1min,
-                co2ppm_avg_5_min: sensorState.co2ppmAvg5min,
-                co2ppm_avg_10_min: sensorState.co2ppmAvg10min,
+                avg: sensorState.avg,
                 lastUpdateMs: sensorState.lastUpdateMs,
                 ageMs,
                 lastError: sensorState.lastError,

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import type { StatusResponse } from "@/api/types";
 import { createApi } from "@/api/http";
-import { sensorState } from "@/state";
+import { sensorState } from "@/state/types";
 
 await describe(`src/api/http.createApi`, async (): Promise<void> => {
     let app: Awaited<ReturnType<typeof createApi>> | null = null;

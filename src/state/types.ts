@@ -1,9 +1,14 @@
+export interface Co2Avg {
+    m1: number | null;
+    m5: number | null;
+    m10: number | null;
+    m30: number | null;
+}
+
 export interface SensorState {
     ok: boolean;
     co2ppm: number | null;
-    co2ppmAvg1min: number | null;
-    co2ppmAvg5min: number | null;
-    co2ppmAvg10min: number | null;
+    avg: Co2Avg;
     lastUpdateMs: number | null;
     lastError: string | null;
 }
@@ -11,9 +16,7 @@ export interface SensorState {
 export const sensorState: SensorState = {
     ok: false,
     co2ppm: null,
-    co2ppmAvg1min: null,
-    co2ppmAvg5min: null,
-    co2ppmAvg10min: null,
+    avg: { m1: null, m5: null, m10: null, m30: null },
     lastUpdateMs: null,
     lastError: null,
 };

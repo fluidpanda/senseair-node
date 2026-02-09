@@ -1,9 +1,9 @@
 import type { Co2Frame } from "@/senseair/frame";
 import type { SerialPort } from "@/serial/types";
+import { avgs, calcAvg } from "@/helpers/avgs";
 import { extractCo2Frames } from "@/senseair/frame";
 import { co2ppmFromFrame } from "@/senseair/protocol";
-import { sensorState } from "@/state";
-import { SlidingWindowAvg } from "@/state/history";
+import { sensorState } from "@/state/types";
 
 const READ_CO2: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x00, 0x03, 0x00, 0x01, 0xd5, 0xc5]);
 
@@ -18,9 +18,6 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
         sensorState.ok = false;
         sensorState.lastError = err.message;
     });
-    const avgFor1Min = new SlidingWindowAvg(60 * 1_000);
-    const avgFor5Min = new SlidingWindowAvg(5 * 60 * 1_000);
-    const avgFor10Min = new SlidingWindowAvg(10 * 60 * 1_000);
     let acc: Buffer = Buffer.alloc(0);
     port.onData((chunk: Buffer): void => {
         try {
@@ -30,14 +27,12 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
             for (const frame of res.frames) {
                 const ppm: number = co2ppmFromFrame(frame);
                 const now: number = Date.now();
-                avgFor1Min.push(ppm, now);
-                avgFor5Min.push(ppm, now);
-                avgFor10Min.push(ppm, now);
+                for (const w of avgs.values()) {
+                    w.push(ppm, now);
+                }
                 sensorState.ok = true;
                 sensorState.co2ppm = ppm;
-                sensorState.co2ppmAvg1min = avgFor1Min.avg(now);
-                sensorState.co2ppmAvg5min = avgFor5Min.avg(now);
-                sensorState.co2ppmAvg10min = avgFor10Min.avg(now);
+                sensorState.avg = calcAvg(now);
                 sensorState.lastUpdateMs = now;
                 sensorState.lastError = null;
                 console.log("Sensor update", { co2ppm: ppm });

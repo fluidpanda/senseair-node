@@ -1,18 +1,9 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
-import { crc16modbus } from "crc";
 import { startService } from "@/service";
-import { sensorState } from "@/state";
-import { sleep } from "@/tests/helpers";
-import { FakePort } from "@/tests/service";
-
-function makeCo2Frame(ppm: number): Buffer {
-    const hi: number = (ppm >> 8) & 0xff;
-    const lo: number = ppm & 0xff;
-    const payload: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x02, hi, lo]);
-    const crc: number = crc16modbus(payload);
-    return Buffer.concat([payload, Buffer.from([crc & 0xff, (crc >> 8) & 0xff])]);
-}
+import { sensorState } from "@/state/types";
+import { makeCo2Frame, sleep } from "@/tests/helpers";
+import { FakePort } from "@/tests/service/fake";
 
 await describe(`src/service.startService`, async (): Promise<void> => {
     beforeEach((): void => {
