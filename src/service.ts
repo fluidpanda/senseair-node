@@ -18,7 +18,9 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
         sensorState.ok = false;
         sensorState.lastError = err.message;
     });
-    const avgForOneMin = new SlidingWindowAvg(60 * 1_000);
+    const avgFor1Min = new SlidingWindowAvg(60 * 1_000);
+    const avgFor5Min = new SlidingWindowAvg(5 * 60 * 1_000);
+    const avgFor10Min = new SlidingWindowAvg(10 * 60 * 1_000);
     let acc: Buffer = Buffer.alloc(0);
     port.onData((chunk: Buffer): void => {
         try {
@@ -28,10 +30,14 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
             for (const frame of res.frames) {
                 const ppm: number = co2ppmFromFrame(frame);
                 const now: number = Date.now();
-                avgForOneMin.push(ppm, now);
+                avgFor1Min.push(ppm, now);
+                avgFor5Min.push(ppm, now);
+                avgFor10Min.push(ppm, now);
                 sensorState.ok = true;
                 sensorState.co2ppm = ppm;
-                sensorState.co2ppmAvg = avgForOneMin.avg(now);
+                sensorState.co2ppmAvg1min = avgFor1Min.avg(now);
+                sensorState.co2ppmAvg5min = avgFor5Min.avg(now);
+                sensorState.co2ppmAvg10min = avgFor10Min.avg(now);
                 sensorState.lastUpdateMs = now;
                 sensorState.lastError = null;
                 console.log("Sensor update", { co2ppm: ppm });
