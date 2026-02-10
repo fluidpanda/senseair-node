@@ -12,7 +12,7 @@ on:
       branch:
         description: "Branch to commit into"
         required: false
-        default: "main"
+        default: "master"
         type: string
 jobs:
   bump-version:
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout target branch
         run: |
           BRANCH="${{ inputs.branch }}"
-          if [ -z "$BRANCH" ]; then BRANCH="main"; fi
+          if [ -z "$BRANCH" ]; then BRANCH="master"; fi
           git checkout "$BRANCH"
 
       - name: Update package.json version
@@ -55,4 +55,4 @@ jobs:
 
           git add package.json package-lock.json || true
           git commit -m "chore: bump version to ${{ steps.version.outputs.tag }}" || exit 0
-          git push origin HEAD:${{ inputs.branch || 'main' }}
+          git push origin HEAD:${{ inputs.branch || 'master' }}
