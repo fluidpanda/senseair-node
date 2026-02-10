@@ -67,9 +67,5 @@ export async function autodetectPort(): Promise<DetectedPort | null> {
             return { path: p.path, reason: `manufacturer ${p.manufacturer}` };
         }
     }
-    const fallback: DetectedSerialPort | undefined = ports.find((p: DetectedSerialPort): boolean => {
-        const v: string = p.path.toLowerCase();
-        return v.includes("ttyusb") || v.startsWith("com");
-    });
-    return fallback ? { path: fallback.path, reason: `first serial-like port ${fallback.path}` } : null;
+    return null;
 }
