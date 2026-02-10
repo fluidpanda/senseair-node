@@ -2,9 +2,9 @@ import type { DetectedPort } from "@/serial/autodetect";
 import type { SerialPort } from "@/serial/types";
 import { createApi } from "@/api/http";
 import { envInt, envStr, initEnv } from "@/helpers/env";
+import { startService } from "@/sensor/service";
 import { autodetectPort } from "@/serial/autodetect";
 import { createSerialPortFromNode, createSerialPortFromMock } from "@/serial/factory";
-import { startService } from "@/service";
 
 initEnv();
 

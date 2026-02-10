@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
 import { makeCo2Frame, sleep } from "@/helpers/tests";
-import { startService } from "@/service";
+import { startService } from "@/sensor/service";
 import { sensorState } from "@/state/types";
 import { FakePort } from "@/tests/service/fake";
 
