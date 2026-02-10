@@ -15,6 +15,7 @@ export async function createApi(opts: ApiOptions): Promise<FastifyInstance> {
         const ageMs: number | null = sensorState.lastUpdateMs ? now - sensorState.lastUpdateMs : null;
         return {
             uptime: Math.floor(process.uptime()),
+            memory: process.memoryUsage().rss,
             sensor: {
                 ok: sensorState.ok,
                 co2ppm: sensorState.co2ppm,

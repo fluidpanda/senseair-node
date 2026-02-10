@@ -1,5 +1,6 @@
 export interface StatusResponse {
-    uptime: number;
+    uptime: number | null;
+    memory: number | null;
     sensor: {
         ok: boolean;
         co2ppm: number | null;

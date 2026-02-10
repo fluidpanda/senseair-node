@@ -16,3 +16,7 @@ export function makeCo2Frame(ppm: number): Buffer {
     const crc: number = crc16modbus(payload);
     return Buffer.concat([payload, Buffer.from([crc & 0xff, (crc >> 8) & 0xff])]);
 }
+
+export function isNumber(v: unknown): v is number {
+    return typeof v === "number" && Number.isFinite(v);
+}
