@@ -3,6 +3,17 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name, e.g. v1.0.2"
+        required: true
+        type: string
+      branch:
+        description: "Branch to commit into"
+        required: false
+        default: "main"
+        type: string
 jobs:
   bump-version:
     runs-on: ubuntu-latest
@@ -13,22 +24,35 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Extract version from tag
+      - name: Resolve tag and version
         id: version
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+
           VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Checkout target branch
+        run: |
+          BRANCH="${{ inputs.branch }}"
+          if [ -z "$BRANCH" ]; then BRANCH="main"; fi
+          git checkout "$BRANCH"
+
       - name: Update package.json version
         run: |
-          npm version ${{ steps.version.outputs.version }} \
+          npm version "${{ steps.version.outputs.version }}" \
             --no-git-tag-version \
             --allow-same-version
+
       - name: Commit and push version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add package.json package-lock.json || true
-          git commit -m "chore: bump version to v${{ steps.version.outputs.version }}" || exit 0
-          git push origin HEAD:main
+          git commit -m "chore: bump version to ${{ steps.version.outputs.tag }}" || exit 0
+          git push origin HEAD:${{ inputs.branch || 'main' }}
