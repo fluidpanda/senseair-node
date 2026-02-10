@@ -1,4 +1,5 @@
 import { SerialPort as NodeSerialPort } from "serialport";
+import { sanitizePort } from "@/helpers/serials";
 
 // {
 //     path: '/dev/ttyUSB0',
@@ -15,6 +16,7 @@ export interface DetectedSerialPort {
     vendorId: string | null;
     productId: string | null;
     manufacturer: string | null;
+    serialNumber: string | null;
 }
 
 export interface DetectedPort {
@@ -22,29 +24,7 @@ export interface DetectedPort {
     reason: string;
 }
 
-function isRecord(x: unknown): x is Record<string, unknown> {
-    return typeof x === "object" && x !== null;
-}
-
-function getString(x: unknown): string | null {
-    return typeof x === "string" && x.length > 0 ? x : null;
-}
-
-function normHex(x: string | null): string | null {
-    if (!x) return null;
-    const s: string = x.toLowerCase().replace(/^0x/, "");
-    return /^[0-9A-f]+$/.test(s) ? s : null;
-}
-
-function sanitizePort(x: unknown): DetectedSerialPort | null {
-    if (!isRecord(x)) return null;
-    const path: string | null = getString(x.path);
-    if (!path) return null;
-    const vendorId: string | null = normHex(getString(x.vendorId));
-    const productId: string | null = normHex(getString(x.productId));
-    const manufacturer: string | null = getString(x.manufacturer);
-    return { path, vendorId, productId, manufacturer };
-}
+type Predicate = (p: DetectedSerialPort) => boolean;
 
 async function listPorts(): Promise<DetectedSerialPort[]> {
     const raw: unknown = await NodeSerialPort.list();
@@ -57,15 +37,17 @@ async function listPorts(): Promise<DetectedSerialPort[]> {
     return out;
 }
 
-export async function autodetectPort(): Promise<DetectedPort | null> {
-    const ports: DetectedSerialPort[] = await listPorts();
-    for (const p of ports) {
-        if (p.vendorId === "0403" && p.productId === "6001") {
-            return { path: p.path, reason: `FTDI VID/PID ${p.vendorId}:${p.productId}` };
-        }
-        if ((p.manufacturer ?? "").toLowerCase().includes("ftdi")) {
-            return { path: p.path, reason: `manufacturer ${p.manufacturer}` };
-        }
+function matchesAny(p: DetectedSerialPort, predicates: readonly Predicate[]): boolean {
+    for (const pred of predicates) {
+        if (pred(p)) return true;
     }
-    return null;
+    return false;
+}
+
+export async function autodetectPorts(
+    ...predicates: Array<(p: DetectedSerialPort) => boolean>
+): Promise<DetectedSerialPort[]> {
+    const ports: DetectedSerialPort[] = await listPorts();
+    if (predicates.length === 0) return ports;
+    return ports.filter((p: DetectedSerialPort): boolean => matchesAny(p, predicates));
 }
