@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag name, e.g. v1.0.2"
+        description: "Tag name, e.g. vX.X.X"
         required: true
         type: string
       branch:
@@ -50,8 +50,8 @@ jobs:
 
       - name: Commit and push version bump
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "fluidpanda"
+          git config user.email "qborrd@gmail.com"
 
           git add package.json package-lock.json || true
           git commit -m "chore: bump version to ${{ steps.version.outputs.tag }}" || exit 0
