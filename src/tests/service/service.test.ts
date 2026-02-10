@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
-import { makeCo2Frame, sleep } from "@/helpers/tests";
+import { delay } from "@/helpers/sensors";
+import { makeCo2Frame } from "@/helpers/tests";
 import { startService } from "@/sensor/service";
 import { sensorState } from "@/state/types";
 import { FakePort } from "@/tests/service/fake";
@@ -21,12 +22,12 @@ await describe(`src/service.startService`, async (): Promise<void> => {
     await it("polls periodically and stops polling", async (): Promise<void> => {
         const port = new FakePort();
         const service = startService(port, { pollingIntervalMs: 10 });
-        await sleep(50);
+        await delay(50);
         const writeBeforeStop: number = port.writes.length;
         assert.ok(writeBeforeStop >= 2);
         await service.stop();
         assert.equal(port.closed, true);
-        await sleep(30);
+        await delay(30);
         assert.equal(port.writes.length, writeBeforeStop);
     });
     await it("updates state on valid frame", async (): Promise<void> => {
