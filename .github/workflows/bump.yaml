@@ -1,8 +1,5 @@
 name: bump version from git tag
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
       tag:
