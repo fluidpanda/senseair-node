@@ -11,6 +11,17 @@ import { sanitizePort } from "@/helpers/serials";
 //     productId: '6001'
 // }
 
+// {
+//     path: 'COM3',
+//     manufacturer: 'FTDI',
+//     serialNumber: 'BG02PWGZ',
+//     pnpId: 'FTDIBUS\\VID_0403+PID_6001+BG02PWGZA\\0000',
+//     locationId: undefined,
+//     friendlyName: 'USB Serial Port (COM3)',
+//     vendorId: '0403',
+//     productId: '6001'
+// }
+
 export interface DetectedSerialPort {
     path: string;
     vendorId: string | null;
