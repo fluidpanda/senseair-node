@@ -11,7 +11,7 @@ export interface ServiceOptions {
     pollingIntervalMs?: number;
 }
 
-export function startService(port: SerialPort, opts: ServiceOptions): { stop: () => Promise<void> } {
+export function startService(port: SerialPort, opts: ServiceOptions): { stop: () => void } {
     console.log("Service started, polling", { pollingIntervalMs: opts.pollingIntervalMs });
     port.onError((err: Error): void => {
         console.error("Serial error", err.message);
@@ -50,9 +50,8 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
     }, intervalMs);
     port.write(READ_CO2);
     return {
-        stop: async (): Promise<void> => {
+        stop: (): void => {
             clearInterval(timer);
-            await port.close();
             console.log("Service stopped");
         },
     };

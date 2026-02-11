@@ -22,7 +22,7 @@ type Mode = "mock" | "node";
 
 export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     let port: SerialPort | null = null;
-    let service: { stop: () => Promise<void> } | null = null;
+    let service: { stop: () => void } | null = null;
     let watchdog: NodeJS.Timeout | null = null;
     let probeTimer: NodeJS.Timeout | null = null;
     let stopping: boolean = false;
@@ -42,7 +42,7 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
             probeTimer = null;
         }
         if (service) {
-            await service.stop().catch((): void => undefined);
+            service.stop();
             service = null;
         }
         if (port) {
@@ -72,7 +72,7 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     }
     function startMock(): void {
         mode = "mock";
-        sensorState.ok = true;
+        sensorState.ok = false;
         sensorState.lastError = "Demo mode, sensor device not detected";
         port = createSerialPortFromMock();
         service = startService(port, { pollingIntervalMs: opts.pollingIntervalMs });
