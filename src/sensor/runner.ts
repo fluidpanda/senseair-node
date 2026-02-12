@@ -1,3 +1,4 @@
+import type { Logger } from "@/logging/logger";
 import type { DetectedPort } from "@/serial/autodetect";
 import type { SerialPort } from "@/serial/types";
 import { delay } from "@/helpers/sensors";
@@ -6,6 +7,7 @@ import { createSerialPortFromMock, createSerialPortFromNode } from "@/serial/fac
 import { sensorState } from "@/state/types";
 
 export interface SensorRunnerOptions {
+    logger: Logger;
     selectPort: () => Promise<DetectedPort | null>;
     pollingIntervalMs: number;
     staleAfterMs?: number;
@@ -21,6 +23,7 @@ export interface SensorRunner {
 type Mode = "mock" | "node";
 
 export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
+    const log: Logger = opts.logger.child({ module: "runner" });
     let port: SerialPort | null = null;
     let service: { stop: () => void } | null = null;
     let watchdog: NodeJS.Timeout | null = null;
@@ -64,9 +67,11 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     }
     function attachNodePortHandlers(p: SerialPort): void {
         p.onClose?.((hadError: boolean): void => {
+            log.warn({ hadError });
             void reconnect(`serial closed (hadError=${hadError})`);
         });
         p.onError((err: Error): void => {
+            log.error({ err });
             void reconnect(`serial error: ${err.message}`);
         });
     }
@@ -84,7 +89,11 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
             connectedAtMs: Date.now(),
         };
         port = createSerialPortFromMock();
-        service = startService(port, { pollingIntervalMs: opts.pollingIntervalMs });
+        log.info({ mode });
+        service = startService(port, {
+            logger: log.child({ module: "service" }),
+            pollingIntervalMs: opts.pollingIntervalMs,
+        });
         if (!probeTimer) {
             probeTimer = setInterval((): void => {
                 void trySwitchToNode();
@@ -102,8 +111,16 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
             manufacturer: d.device.manufacturer,
             connectedAtMs: Date.now(),
         };
-        port = createSerialPortFromNode({ path: d.path, baudRate: 9_600 });
-        service = startService(port, { pollingIntervalMs: opts.pollingIntervalMs });
+        port = createSerialPortFromNode({
+            logger: log.child({ module: "factory" }),
+            path: d.path,
+            baudRate: 9_600,
+        });
+        log.info({ mode, path: d.path, baudRate: 9_600 });
+        service = startService(port, {
+            logger: log.child({ module: "service" }),
+            pollingIntervalMs: opts.pollingIntervalMs,
+        });
         attachNodePortHandlers(port);
         startWatchdog();
         sensorState.lastError = null;
@@ -122,6 +139,7 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
         reconnecting = true;
         sensorState.ok = false;
         sensorState.lastError = `Sensor disconnected: ${reason}`;
+        log.warn({ reason });
         let backoff = 500;
         while (!stopping) {
             try {

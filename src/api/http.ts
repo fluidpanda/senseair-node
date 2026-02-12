@@ -1,15 +1,17 @@
 import Fastify from "fastify";
-import type { FastifyInstance } from "fastify";
 import type { StatusResponse } from "@/api/types";
+import type { Logger } from "@/logging/logger";
 import { sensorState } from "@/state/types";
 
 export interface ApiOptions {
+    logger: Logger;
     host: string;
     port: number;
 }
 
-export async function createApi(opts: ApiOptions): Promise<FastifyInstance> {
-    const app = Fastify({ logger: true });
+export async function createApi(opts: ApiOptions) {
+    const app = Fastify({ loggerInstance: opts.logger });
+    const log = opts.logger.child({ module: "api" });
     app.get("/status", (): StatusResponse => {
         const now: number = Date.now();
         const ageMs: number | null = sensorState.lastUpdateMs ? now - sensorState.lastUpdateMs : null;
@@ -28,6 +30,6 @@ export async function createApi(opts: ApiOptions): Promise<FastifyInstance> {
         };
     });
     await app.listen({ host: opts.host, port: opts.port });
-    app.log.info({ host: opts.host, port: opts.port }, "API started");
+    log.info({ host: opts.host, port: opts.port });
     return app;
 }

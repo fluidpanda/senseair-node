@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { crc16modbus } from "crc";
+import pino from "pino";
+import type { Logger } from "@/logging/logger";
 
 export function assertNonNull<T>(value: T, message?: string): asserts value is NonNullable<T> {
     assert.ok(value !== null && value !== undefined, message);
@@ -16,3 +18,6 @@ export function makeCo2Frame(ppm: number): Buffer {
 export function isNumber(v: unknown): v is number {
     return typeof v === "number" && Number.isFinite(v);
 }
+
+const testLogger: Logger = pino({ level: "silent" });
+export const logger: Logger = testLogger.child({ module: "tests" });

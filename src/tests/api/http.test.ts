@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import type { StatusResponse } from "@/api/types";
 import { createApi } from "@/api/http";
-import { isNumber } from "@/helpers/tests";
+import { isNumber, logger } from "@/helpers/tests";
 import { sensorState } from "@/state/types";
 
 await describe(`src/api/http.createApi`, async (): Promise<void> => {
@@ -17,7 +17,7 @@ await describe(`src/api/http.createApi`, async (): Promise<void> => {
         sensorState.avg = { m1: 650, m5: 620, m10: 610, m30: 600 };
         sensorState.lastUpdateMs = Date.now() - 1000;
         sensorState.lastError = null;
-        app = await createApi({ host: "127.0.0.1", port: 0 });
+        app = await createApi({ logger, host: "127.0.0.1", port: 0 });
         const res = await app.inject({ method: "GET", url: "/status" });
         assert.equal(res.statusCode, 200);
         const api: StatusResponse = res.json();

@@ -1,14 +1,15 @@
 import { SerialPort as NodeSerialPort } from "serialport";
+import type { Logger } from "@/logging/logger";
 import type { SerialDataHandler, SerialPort } from "@/serial/types";
 import { MockSerialPort } from "@/serial/mock";
 
 export interface SerialPortFromNodeOptions {
+    logger: Logger;
     path: string;
     baudRate?: number;
 }
 
 export function createSerialPortFromMock(): SerialPort {
-    console.log("Serial port created from mock");
     return new MockSerialPort({
         basePpm: 650,
         amplitude: 200,
@@ -17,6 +18,7 @@ export function createSerialPortFromMock(): SerialPort {
 }
 
 export function createSerialPortFromNode(opts: SerialPortFromNodeOptions): SerialPort {
+    const log: Logger = opts.logger;
     const port = new NodeSerialPort({
         path: opts.path,
         baudRate: opts.baudRate ?? 9_600,
@@ -25,7 +27,7 @@ export function createSerialPortFromNode(opts: SerialPortFromNodeOptions): Seria
         parity: "none",
         autoOpen: true,
     });
-    console.log(`Serial port created from`, { path: opts.path });
+    log.info({ path: opts.path });
     return {
         write(data: Buffer): void {
             port.write(data);

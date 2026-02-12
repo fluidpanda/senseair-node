@@ -1,3 +1,4 @@
+import type { Logger } from "@/logging/logger";
 import type { Co2Frame } from "@/senseair/frame";
 import type { SerialPort } from "@/serial/types";
 import { avgs, calcAvg } from "@/helpers/avgs";
@@ -8,13 +9,15 @@ import { sensorState } from "@/state/types";
 const READ_CO2: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x00, 0x03, 0x00, 0x01, 0xd5, 0xc5]);
 
 export interface ServiceOptions {
+    logger: Logger;
     pollingIntervalMs?: number;
 }
 
 export function startService(port: SerialPort, opts: ServiceOptions): { stop: () => void } {
-    console.log("Service started, polling", { pollingIntervalMs: opts.pollingIntervalMs });
+    const log: Logger = opts.logger;
+    log.info({ pollingIntervalMs: opts.pollingIntervalMs });
     port.onError((err: Error): void => {
-        console.error("Serial error", err.message);
+        log.error({ err });
         sensorState.ok = false;
         sensorState.lastError = err.message;
     });
@@ -35,13 +38,13 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
                 sensorState.avg = calcAvg(now);
                 sensorState.lastUpdateMs = now;
                 sensorState.lastError = null;
-                console.log("Sensor update", { co2ppm: ppm });
+                log.info({ co2ppm: ppm });
             }
         } catch (err) {
             const msg: string = err instanceof Error ? err.message : String(err);
             sensorState.ok = false;
             sensorState.lastError = msg;
-            console.error("Error occurred", msg);
+            log.error({ err });
         }
     });
     const intervalMs: number = opts.pollingIntervalMs ?? 5_000;
@@ -52,7 +55,7 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
     return {
         stop: (): void => {
             clearInterval(timer);
-            console.log("Service stopped");
+            log.warn("service stopped");
         },
     };
 }

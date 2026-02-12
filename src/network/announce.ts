@@ -1,5 +1,6 @@
 import * as dgram from "node:dgram";
 import * as os from "node:os";
+import type { Logger } from "@/logging/logger";
 
 export interface AnnouncePayloadV1 {
     type: "senseair.sensor.announce";
@@ -14,6 +15,7 @@ export interface AnnouncePayloadV1 {
 }
 
 export interface UdpAnnounceOptions {
+    logger: Logger;
     id: string;
     apiPort: number;
     broadcastHost?: string;
@@ -54,18 +56,20 @@ function buildPayload(opts: UdpAnnounceOptions): AnnouncePayloadV1 {
 }
 
 export function createAnnouncer(opts: UdpAnnounceOptions): Announcer {
+    const log = opts.logger.child({ module: "announce" });
     const host: string = opts.broadcastHost ?? "255.255.255.255";
     const port: number = opts.broadcastPort ?? 45_454;
     const intervalMs: number = opts.intervalMs ?? 5_000;
     const socket = dgram.createSocket("udp4");
     socket.unref();
+    log.info({ host, port, intervalMs });
     let closed = false;
     const sendOnce = (): void => {
         if (closed) return;
         const payload: AnnouncePayloadV1 = buildPayload(opts);
         const msg: Buffer = Buffer.from(JSON.stringify(payload), "utf8");
         socket.send(msg, port, host, (err: Error | null) => {
-            if (err) console.error("UDP announce send failed:", err.message);
+            if (err) log.error({ err });
         });
     };
     socket.bind((): void => {
@@ -81,6 +85,7 @@ export function createAnnouncer(opts: UdpAnnounceOptions): Announcer {
             closed = true;
             clearInterval(timer);
             socket.close();
+            log.warn({ closed });
         },
     };
 }
