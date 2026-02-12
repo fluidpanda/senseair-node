@@ -12,10 +12,9 @@ const AVG_WINDOWS: Readonly<Record<AvgKey, number>> = {
 } as const;
 
 export const avgs: Map<AvgKey, SlidingWindowAvg> = new Map(
-    (Object.entries(AVG_WINDOWS) as [AvgKey, number][]).map(([k, ms]: [AvgKey, number]): [AvgKey, SlidingWindowAvg] => [
-        k,
-        new SlidingWindowAvg(ms),
-    ]),
+    (Object.entries(AVG_WINDOWS) as Array<[AvgKey, number]>).map(
+        ([k, ms]: [AvgKey, number]): [AvgKey, SlidingWindowAvg] => [k, new SlidingWindowAvg(ms)],
+    ),
 );
 
 export function calcAvg(now: number): Record<AvgKey, number | null> {

@@ -15,7 +15,7 @@ const API_PORT: number = envInt("API_PORT", 4_545);
 const POLL_INTERVAL_MS: number = envInt("POLL_INTERVAL_MS", 5_000);
 
 async function selectSenseAirPort(): Promise<DetectedPort | null> {
-    const ports: DetectedSerialPort[] = await autodetectPorts(isFtdi);
+    const ports: Array<DetectedSerialPort> = await autodetectPorts(isFtdi);
     return selectPort(ports, { serial: UART_SERIAL ?? undefined });
 }
 

@@ -1,7 +1,7 @@
 import type { SerialDataHandler, SerialPort } from "@/serial/types";
 
 export class FakePort implements SerialPort {
-    public writes: Buffer[] = [];
+    public writes: Array<Buffer> = [];
     public closed: boolean = false;
     private onDataCb: SerialDataHandler | null = null;
     private onErrorCb: ((err: Error) => void) | null = null;

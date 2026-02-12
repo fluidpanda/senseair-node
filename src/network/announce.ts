@@ -5,7 +5,7 @@ export interface AnnouncePayloadV1 {
     type: "senseair.sensor.announce";
     version: 1.0;
     id: string;
-    ips: string[];
+    ips: Array<string>;
     api: {
         port: number;
         path: "/status";
@@ -19,12 +19,12 @@ export interface UdpAnnounceOptions {
     broadcastHost?: string;
     broadcastPort?: number;
     intervalMs?: number;
-    ips?: string[];
+    ips?: Array<string>;
 }
 
-function detectLocalIPv4(): string[] {
+function detectLocalIPv4(): Array<string> {
     const iface = os.networkInterfaces();
-    const ips: string[] = [];
+    const ips: Array<string> = [];
     for (const entries of Object.values(iface)) {
         for (const e of entries ?? []) {
             if (e.family !== "IPv4") continue;

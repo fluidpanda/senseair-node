@@ -4,12 +4,12 @@ const HEADER: Buffer<ArrayBuffer> = Buffer.from([0xfe, 0x04, 0x02]);
 const FRAME_LENGTH: number = 7;
 
 export type Co2Frame = {
-    frames: Buffer[];
+    frames: Array<Buffer>;
     rest: Buffer;
 };
 
 export function extractCo2Frames(acc: Buffer): Co2Frame {
-    const frames: Buffer[] = [];
+    const frames: Array<Buffer> = [];
     let b: Buffer = acc;
     while (b.length > 0) {
         const index: number = b.indexOf(HEADER);

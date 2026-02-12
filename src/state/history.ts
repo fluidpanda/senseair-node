@@ -5,7 +5,7 @@ export interface Co2Sample {
 
 export class SlidingWindowAvg {
     private readonly windowMs: number;
-    private readonly samples: Co2Sample[] = [];
+    private readonly samples: Array<Co2Sample> = [];
     private prune(nowMs: number): void {
         const minMs: number = nowMs - this.windowMs;
         let index = 0;

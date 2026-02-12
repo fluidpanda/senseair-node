@@ -37,10 +37,10 @@ export interface DetectedPort {
 
 type Predicate = (p: DetectedSerialPort) => boolean;
 
-async function listPorts(): Promise<DetectedSerialPort[]> {
+async function listPorts(): Promise<Array<DetectedSerialPort>> {
     const raw: unknown = await NodeSerialPort.list();
     if (!Array.isArray(raw)) return [];
-    const out: DetectedSerialPort[] = [];
+    const out: Array<DetectedSerialPort> = [];
     for (const item of raw) {
         const p: DetectedSerialPort | null = sanitizePort(item);
         if (p) out.push(p);
@@ -48,7 +48,7 @@ async function listPorts(): Promise<DetectedSerialPort[]> {
     return out;
 }
 
-function matchesAny(p: DetectedSerialPort, predicates: readonly Predicate[]): boolean {
+function matchesAny(p: DetectedSerialPort, predicates: ReadonlyArray<Predicate>): boolean {
     for (const pred of predicates) {
         if (pred(p)) return true;
     }
@@ -57,8 +57,8 @@ function matchesAny(p: DetectedSerialPort, predicates: readonly Predicate[]): bo
 
 export async function autodetectPorts(
     ...predicates: Array<(p: DetectedSerialPort) => boolean>
-): Promise<DetectedSerialPort[]> {
-    const ports: DetectedSerialPort[] = await listPorts();
+): Promise<Array<DetectedSerialPort>> {
+    const ports: Array<DetectedSerialPort> = await listPorts();
     if (predicates.length === 0) return ports;
     return ports.filter((p: DetectedSerialPort): boolean => matchesAny(p, predicates));
 }
