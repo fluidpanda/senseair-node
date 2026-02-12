@@ -73,7 +73,16 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     function startMock(): void {
         mode = "mock";
         sensorState.ok = false;
+        sensorState.mode = mode;
         sensorState.lastError = "Demo mode, sensor device not detected";
+        sensorState.device = {
+            path: "mock:sensor",
+            serialNumber: "MOCK-DEVICE",
+            vendorId: null,
+            productId: null,
+            manufacturer: "Mock",
+            connectedAtMs: Date.now(),
+        };
         port = createSerialPortFromMock();
         service = startService(port, { pollingIntervalMs: opts.pollingIntervalMs });
         if (!probeTimer) {
@@ -84,6 +93,15 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     }
     function startNode(d: DetectedPort): void {
         mode = "node";
+        sensorState.mode = mode;
+        sensorState.device = {
+            path: d.path,
+            serialNumber: d.device.serialNumber,
+            vendorId: d.device.vendorId,
+            productId: d.device.productId,
+            manufacturer: d.device.manufacturer,
+            connectedAtMs: Date.now(),
+        };
         port = createSerialPortFromNode({ path: d.path, baudRate: 9_600 });
         service = startService(port, { pollingIntervalMs: opts.pollingIntervalMs });
         attachNodePortHandlers(port);

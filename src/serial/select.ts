@@ -1,6 +1,15 @@
 import type { DetectedPort, DetectedSerialPort } from "@/serial/autodetect";
 
-export function selectPort(ports: DetectedSerialPort[], opts: { serial?: string }): DetectedPort | null {
+function deviceInfoFromPort(p: DetectedSerialPort): DetectedPort["device"] {
+    return {
+        serialNumber: p.serialNumber,
+        vendorId: p.vendorId,
+        productId: p.productId,
+        manufacturer: p.manufacturer,
+    };
+}
+
+export function selectPort(ports: Array<DetectedSerialPort>, opts: { serial?: string }): DetectedPort | null {
     if (ports.length === 0) return null;
     if (opts.serial) {
         const p: DetectedSerialPort | undefined = ports.find(
@@ -9,7 +18,11 @@ export function selectPort(ports: DetectedSerialPort[], opts: { serial?: string 
         if (!p) {
             throw new Error(`Requested serial ${opts.serial} not found`);
         }
-        return { path: p.path, reason: `matched by serial ${opts.serial}` };
+        return {
+            path: p.path,
+            reason: `matched by serial ${opts.serial}`,
+            device: deviceInfoFromPort(p),
+        };
     }
     if (ports.length > 1) {
         throw new Error(
@@ -18,5 +31,9 @@ export function selectPort(ports: DetectedSerialPort[], opts: { serial?: string 
         );
     }
     const p: DetectedSerialPort = ports[0];
-    return { path: p.path, reason: `single device ${p.serialNumber ?? "?"}` };
+    return {
+        path: p.path,
+        reason: `single device ${p.serialNumber ?? "?"}`,
+        device: deviceInfoFromPort(p),
+    };
 }

@@ -1,3 +1,5 @@
+import type { ConnectedDevice } from "@/state/types";
+
 export interface StatusResponse {
     uptime: number;
     memory: number;
@@ -8,5 +10,6 @@ export interface StatusResponse {
         lastUpdateMs: number | null;
         ageMs: number | null;
         lastError: string | null;
+        device: ConnectedDevice | null;
     };
 }

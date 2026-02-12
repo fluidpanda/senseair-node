@@ -30,9 +30,17 @@ export interface DetectedSerialPort {
     serialNumber: string | null;
 }
 
+export interface DeviceInfo {
+    serialNumber: string | null;
+    vendorId: string | null;
+    productId: string | null;
+    manufacturer: string | null;
+}
+
 export interface DetectedPort {
     path: string;
     reason: string;
+    device: DeviceInfo;
 }
 
 type Predicate = (p: DetectedSerialPort) => boolean;

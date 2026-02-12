@@ -23,6 +23,7 @@ export async function createApi(opts: ApiOptions): Promise<FastifyInstance> {
                 lastUpdateMs: sensorState.lastUpdateMs,
                 ageMs,
                 lastError: sensorState.lastError,
+                device: sensorState.device,
             },
         };
     });
