@@ -3,7 +3,7 @@ import * as os from "node:os";
 
 export interface AnnouncePayloadV1 {
     type: "senseair.sensor.announce";
-    version: 1.0;
+    version: 1;
     id: string;
     ips: Array<string>;
     api: {
@@ -42,7 +42,7 @@ function detectLocalIPv4(): Array<string> {
 function buildPayload(opts: UdpAnnounceOptions): AnnouncePayloadV1 {
     return {
         type: "senseair.sensor.announce",
-        version: 1.0,
+        version: 1,
         id: opts.id,
         ips: opts.ips ?? detectLocalIPv4(),
         api: {
