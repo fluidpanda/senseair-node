@@ -22,6 +22,10 @@ export interface UdpAnnounceOptions {
     ips?: Array<string>;
 }
 
+export interface Announcer {
+    stop(): void;
+}
+
 function detectLocalIPv4(): Array<string> {
     const iface = os.networkInterfaces();
     const ips: Array<string> = [];
@@ -35,38 +39,48 @@ function detectLocalIPv4(): Array<string> {
     return ips;
 }
 
-export function startAnnounce(opts: UdpAnnounceOptions): { stop: () => Promise<void> } {
+function buildPayload(opts: UdpAnnounceOptions): AnnouncePayloadV1 {
+    return {
+        type: "senseair.sensor.announce",
+        version: 1.0,
+        id: opts.id,
+        ips: opts.ips ?? detectLocalIPv4(),
+        api: {
+            port: opts.apiPort,
+            path: "/status",
+        },
+        ts: Date.now(),
+    };
+}
+
+export function createAnnouncer(opts: UdpAnnounceOptions): Announcer {
     const host: string = opts.broadcastHost ?? "255.255.255.255";
     const port: number = opts.broadcastPort ?? 45_454;
     const intervalMs: number = opts.intervalMs ?? 5_000;
     const socket = dgram.createSocket("udp4");
     socket.unref();
-    socket.bind((): void => {
-        socket.setBroadcast(true);
-    });
+    let closed = false;
     const sendOnce = (): void => {
-        const payload: AnnouncePayloadV1 = {
-            type: "senseair.sensor.announce",
-            version: 1.0,
-            id: opts.id,
-            ips: opts.ips ?? detectLocalIPv4(),
-            api: {
-                port: opts.apiPort,
-                path: "/status",
-            },
-            ts: Date.now(),
-        };
-        const msg: Buffer<ArrayBuffer> = Buffer.from(JSON.stringify(payload), "utf8");
-        socket.send(msg, port, host);
+        if (closed) return;
+        const payload: AnnouncePayloadV1 = buildPayload(opts);
+        const msg: Buffer = Buffer.from(JSON.stringify(payload), "utf8");
+        socket.send(msg, port, host, (err: Error | null) => {
+            if (err) console.error("UDP announce send failed:", err.message);
+        });
     };
+    socket.bind((): void => {
+        if (closed) return;
+        socket.setBroadcast(true);
+        sendOnce();
+    });
     const timer = setInterval(sendOnce, intervalMs);
     timer.unref();
     return {
-        stop: async (): Promise<void> => {
+        stop(): void {
+            if (closed) return;
+            closed = true;
             clearInterval(timer);
-            await new Promise<void>((resolve): void => {
-                socket.close((): void => resolve());
-            });
+            socket.close();
         },
     };
 }

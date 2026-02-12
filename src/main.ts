@@ -1,7 +1,10 @@
+import type { Announcer } from "@/network/announce";
 import type { SensorRunner } from "@/sensor/runner";
 import type { DetectedPort, DetectedSerialPort } from "@/serial/autodetect";
 import { createApi } from "@/api/http";
+import { getDeviceId } from "@/helpers/devices";
 import { envInt, envStr, initEnv } from "@/helpers/envs";
+import { createAnnouncer } from "@/network/announce";
 import { createSensorRunner } from "@/sensor/runner";
 import { autodetectPorts } from "@/serial/autodetect";
 import { selectPort } from "@/serial/select";
@@ -13,6 +16,7 @@ const UART_SERIAL: string | null = envStr("UART_SERIAL");
 const API_HOST: string = envStr("API_HOST") ?? "0.0.0.0";
 const API_PORT: number = envInt("API_PORT", 4_545);
 const POLL_INTERVAL_MS: number = envInt("POLL_INTERVAL_MS", 5_000);
+const BROADCAST_INTERVAL_MS: number = envInt("BROADCAST_INTERVAL_MS", 10_000);
 
 async function selectSenseAirPort(): Promise<DetectedPort | null> {
     const ports: Array<DetectedSerialPort> = await autodetectPorts(isFtdi);
@@ -26,9 +30,15 @@ async function main(): Promise<void> {
     });
     await runner.start();
     const api = await createApi({ host: API_HOST, port: API_PORT });
+    const announcer: Announcer = createAnnouncer({
+        id: getDeviceId(),
+        apiPort: API_PORT,
+        intervalMs: BROADCAST_INTERVAL_MS,
+    });
     const shutdown = async (): Promise<void> => {
         await runner.stop();
         await api.close();
+        announcer.stop();
         process.exit(0);
     };
     process.on("SIGINT", (): undefined => void shutdown());
