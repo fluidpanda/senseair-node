@@ -91,7 +91,7 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
         port = createSerialPortFromMock();
         log.info({ mode });
         service = startService(port, {
-            logger: log.child({ module: "service" }),
+            logger: log.child({ component: "service" }),
             pollingIntervalMs: opts.pollingIntervalMs,
         });
         if (!probeTimer) {
@@ -112,13 +112,13 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
             connectedAtMs: Date.now(),
         };
         port = createSerialPortFromNode({
-            logger: log.child({ module: "factory" }),
+            logger: log.child({ component: "factory" }),
             path: d.path,
             baudRate: 9_600,
         });
         log.info({ mode, path: d.path, baudRate: 9_600 });
         service = startService(port, {
-            logger: log.child({ module: "service" }),
+            logger: log.child({ component: "service" }),
             pollingIntervalMs: opts.pollingIntervalMs,
         });
         attachNodePortHandlers(port);

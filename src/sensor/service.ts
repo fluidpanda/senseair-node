@@ -38,7 +38,7 @@ export function startService(port: SerialPort, opts: ServiceOptions): { stop: ()
                 sensorState.avg = calcAvg(now);
                 sensorState.lastUpdateMs = now;
                 sensorState.lastError = null;
-                log.info({ co2ppm: ppm });
+                log.debug({ co2ppm: ppm });
             }
         } catch (err) {
             const msg: string = err instanceof Error ? err.message : String(err);
