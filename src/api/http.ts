@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import type { StatusResponse } from "@/api/types";
 import type { Logger } from "@/logging/logger";
-import { sensorState } from "@/state/types";
+import { runtimeState } from "@/state/runtime";
 
 export interface ApiOptions {
     logger: Logger;
@@ -14,19 +14,12 @@ export async function createApi(opts: ApiOptions) {
     const log = opts.logger.child({ module: "api" });
     app.get("/status", (): StatusResponse => {
         const now: number = Date.now();
-        const ageMs: number | null = sensorState.lastUpdateMs ? now - sensorState.lastUpdateMs : null;
+        const ageMs: number | null = runtimeState.data.lastUpdateMs ? now - runtimeState.data.lastUpdateMs : null;
         return {
             uptime: Math.floor(process.uptime()),
             memory: process.memoryUsage().rss,
-            sensor: {
-                ok: sensorState.ok,
-                co2ppm: sensorState.co2ppm,
-                avg: sensorState.avg,
-                lastUpdateMs: sensorState.lastUpdateMs,
-                ageMs,
-                lastError: sensorState.lastError,
-                device: sensorState.device,
-            },
+            sensor: { ageMs, ...runtimeState.data },
+            device: runtimeState.device,
         };
     });
     await app.listen({ host: opts.host, port: opts.port });

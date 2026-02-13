@@ -1,10 +1,10 @@
 import type { Logger } from "@/logging/logger";
 import type { DetectedPort } from "@/serial/autodetect";
 import type { SerialPort } from "@/serial/types";
-import { delay } from "@/helpers/sensors";
+import { delay, makeDeviceInfo, resetSensorData } from "@/helpers/sensors";
 import { startService } from "@/sensor/service";
 import { createSerialPortFromMock, createSerialPortFromNode } from "@/serial/factory";
-import { sensorState } from "@/state/types";
+import { runtimeState } from "@/state/runtime";
 
 export interface SensorRunnerOptions {
     logger: Logger;
@@ -57,7 +57,7 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
         if (watchdog) return;
         watchdog = setInterval((): void => {
             if (mode !== "node") return;
-            const last: number | null = sensorState.lastUpdateMs;
+            const last: number | null = runtimeState.data.lastUpdateMs;
             if (!last) return;
             const age: number = Date.now() - last;
             if (age > staleAfterMs) {
@@ -67,27 +67,27 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     }
     function attachNodePortHandlers(p: SerialPort): void {
         p.onClose?.((hadError: boolean): void => {
+            if (stopping) return;
             log.warn({ hadError });
             void reconnect(`serial closed (hadError=${hadError})`);
         });
         p.onError((err: Error): void => {
+            if (stopping) return;
             log.error({ err });
             void reconnect(`serial error: ${err.message}`);
         });
     }
     function startMock(): void {
         mode = "mock";
-        sensorState.ok = false;
-        sensorState.mode = mode;
-        sensorState.lastError = "Demo mode, sensor device not detected";
-        sensorState.device = {
-            path: "mock:sensor",
-            serialNumber: "MOCK-DEVICE",
-            vendorId: null,
-            productId: null,
-            manufacturer: "Mock",
-            connectedAtMs: Date.now(),
-        };
+        runtimeState.device = makeDeviceInfo({
+            mode,
+            path: "mock",
+            serialNumber: "M0CKM0CK",
+            vendorId: "0001",
+            productId: "0001",
+            manufacturer: "MOCK",
+        });
+        resetSensorData({ lastError: "Demo mode, sensor device not detected" });
         port = createSerialPortFromMock();
         log.info({ mode });
         service = startService(port, {
@@ -102,15 +102,14 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     }
     function startNode(d: DetectedPort): void {
         mode = "node";
-        sensorState.mode = mode;
-        sensorState.device = {
+        runtimeState.device = makeDeviceInfo({
+            mode,
             path: d.path,
             serialNumber: d.device.serialNumber,
             vendorId: d.device.vendorId,
             productId: d.device.productId,
             manufacturer: d.device.manufacturer,
-            connectedAtMs: Date.now(),
-        };
+        });
         port = createSerialPortFromNode({
             logger: log.child({ component: "factory" }),
             path: d.path,
@@ -123,7 +122,7 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
         });
         attachNodePortHandlers(port);
         startWatchdog();
-        sensorState.lastError = null;
+        runtimeState.data.lastError = null;
     }
     async function trySwitchToNode(): Promise<void> {
         if (stopping) return;
@@ -137,8 +136,7 @@ export function createSensorRunner(opts: SensorRunnerOptions): SensorRunner {
     async function reconnect(reason: string): Promise<void> {
         if (stopping || reconnecting) return;
         reconnecting = true;
-        sensorState.ok = false;
-        sensorState.lastError = `Sensor disconnected: ${reason}`;
+        resetSensorData({ lastError: reason });
         log.warn({ reason });
         let backoff = 500;
         while (!stopping) {

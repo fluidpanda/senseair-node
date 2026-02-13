@@ -1,6 +1,6 @@
 import { SlidingWindowAvg } from "@/state/history";
 
-export type AvgKey = "m1" | "m5" | "m10" | "m30";
+export type AvgKey = "m1" | "m5" | "m10" | "m30" | "m60";
 
 const min = 60 * 1_000;
 
@@ -9,6 +9,7 @@ const AVG_WINDOWS: Readonly<Record<AvgKey, number>> = {
     m5: 5 * min,
     m10: 10 * min,
     m30: 30 * min,
+    m60: 60 * min,
 } as const;
 
 export const avgs: Map<AvgKey, SlidingWindowAvg> = new Map(

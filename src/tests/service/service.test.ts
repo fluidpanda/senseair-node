@@ -3,15 +3,15 @@ import { beforeEach, describe, it } from "node:test";
 import { delay } from "@/helpers/sensors";
 import { makeCo2Frame, logger } from "@/helpers/tests";
 import { startService } from "@/sensor/service";
-import { sensorState } from "@/state/types";
+import { runtimeState } from "@/state/runtime";
 import { FakePort } from "@/tests/service/fake";
 
 await describe(`src/service.startService`, async (): Promise<void> => {
     beforeEach((): void => {
-        sensorState.ok = false;
-        sensorState.co2ppm = null;
-        sensorState.lastUpdateMs = null;
-        sensorState.lastError = null;
+        runtimeState.data.ok = false;
+        runtimeState.data.co2ppm = null;
+        runtimeState.data.lastUpdateMs = null;
+        runtimeState.data.lastError = null;
     });
     await it("writes READ_CO2 immediately on start", (): void => {
         const port = new FakePort();
@@ -34,27 +34,27 @@ await describe(`src/service.startService`, async (): Promise<void> => {
         const port = new FakePort();
         const service = startService(port, { logger, pollingIntervalMs: 50_000 });
         port.emitData(makeCo2Frame(500));
-        assert.equal(sensorState.ok, true);
-        assert.equal(sensorState.co2ppm, 500);
-        assert.equal(sensorState.lastError, null);
-        assert.ok(typeof sensorState.lastUpdateMs === "number");
+        assert.equal(runtimeState.data.ok, true);
+        assert.equal(runtimeState.data.co2ppm, 500);
+        assert.equal(runtimeState.data.lastError, null);
+        assert.ok(typeof runtimeState.data.lastUpdateMs === "number");
         service.stop();
     });
     await it("waits for frame ending", (): void => {
         const port = new FakePort();
         const service = startService(port, { logger, pollingIntervalMs: 50_000 });
         port.emitData(Buffer.from([0x00, 0xff]));
-        assert.equal(sensorState.ok, false);
-        assert.equal(sensorState.co2ppm, null);
-        assert.equal(sensorState.lastError, null);
+        assert.equal(runtimeState.data.ok, false);
+        assert.equal(runtimeState.data.co2ppm, null);
+        assert.equal(runtimeState.data.lastError, null);
         service.stop();
     });
     await it("sets error state on serial error", (): void => {
         const port = new FakePort();
         const service = startService(port, { logger, pollingIntervalMs: 50_000 });
         port.emitError(new Error("Yoba eto ti?"));
-        assert.equal(sensorState.ok, false);
-        assert.equal(sensorState.lastError, "Yoba eto ti?");
+        assert.equal(runtimeState.data.ok, false);
+        assert.equal(runtimeState.data.lastError, "Yoba eto ti?");
         service.stop();
     });
 });
