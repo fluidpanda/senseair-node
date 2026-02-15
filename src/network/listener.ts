@@ -13,7 +13,7 @@ socket.on("message", (msg: Buffer, rinfo: dgram.RemoteInfo): void => {
     try {
         const parsed = JSON.parse(msg.toString("utf8")) as AnnouncePayloadV1;
         console.log("parsed Json");
-        console.log(parsed, { depth: null, colors: true });
+        console.log(parsed);
     } catch {
         console.log("raw");
         console.log(msg.toString("utf8"));
