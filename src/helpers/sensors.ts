@@ -4,6 +4,7 @@ import { runtimeState, sensorAvgEmpty, sensorDataEmpty } from "@/state/runtime";
 export function delay(ms: number): Promise<void> {
     return new Promise((r) => setTimeout(r, ms));
 }
+
 export function makeDeviceInfo(
     init: Omit<DeviceInfo, "connectedAtMs"> & {
         connectedAtMs?: number | null;

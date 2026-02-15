@@ -5,7 +5,7 @@ const PORT = 45_454;
 const socket = dgram.createSocket("udp4");
 socket.on("listening", (): void => {
     const a = socket.address();
-    console.log(`listtening for UDP announce on ${a.address}:${a.port}`);
+    console.log(`listening for UDP announce on ${a.address}:${a.port}`);
 });
 socket.on("message", (msg: Buffer, rinfo: dgram.RemoteInfo): void => {
     console.log(`from ${rinfo.address}:${rinfo.port}`);
